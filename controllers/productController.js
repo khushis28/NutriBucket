@@ -5,18 +5,18 @@ import orderModel from "../models/orderModel.js";
 
 import fs from "fs";
 import slugify from "slugify";
-// import braintree from "braintree";
+import braintree from "braintree";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-//payment gateway
-// var gateway = new braintree.BraintreeGateway({
-//   environment: braintree.Environment.Sandbox,
-//   merchantId: process.env.BRAINTREE_MERCHANT_ID,
-//   publicKey: process.env.BRAINTREE_PUBLIC_KEY,
-//   privateKey: process.env.BRAINTREE_PRIVATE_KEY,
-// });
+// payment gateway
+var gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MERCHANT_ID,
+  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
+});
 
 export const createProductController = async (req, res) => {
   try {
@@ -344,35 +344,35 @@ export const braintreeTokenController = async (req, res) => {
 };
 
 // //payment
-// export const brainTreePaymentController = async (req, res) => {
-//   try {
-//     const { nonce, cart } = req.body;
-//     let total = 0;
-//     cart.map((i) => {
-//       total += i.price;
-//     });
-//     let newTransaction = gateway.transaction.sale(
-//       {
-//         amount: total,
-//         paymentMethodNonce: nonce,
-//         options: {
-//           submitForSettlement: true,
-//         },
-//       },
-//       function (error, result) {
-//         if (result) {
-//           const order = new orderModel({
-//             products: cart,
-//             payment: result,
-//             buyer: req.user._id,
-//           }).save();
-//           res.json({ ok: true });
-//         } else {
-//           res.status(500).send(error);
-//         }
-//       }
-//     );
-//   } catch (error) {
-//     console.log(error);
-//   }
-// };
+export const brainTreePaymentController = async (req, res) => {
+  try {
+    const { nonce, cart } = req.body;
+    let total = 0;
+    cart.map((i) => {
+      total += i.price;
+    });
+    let newTransaction = gateway.transaction.sale(
+      {
+        amount: total,
+        paymentMethodNonce: nonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      function (error, result) {
+        if (result) {
+          const order = new orderModel({
+            products: cart,
+            payment: result,
+            buyer: req.user._id,
+          }).save();
+          res.json({ ok: true });
+        } else {
+          res.status(500).send(error);
+        }
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
